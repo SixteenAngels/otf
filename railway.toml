@@ -1,0 +1,12 @@
+[build]
+builder = "dockerfile"
+
+[[services]]
+name = "concert-backend"
+dockerfile = "./backend/Dockerfile"
+context = "./backend"
+
+[[services]]
+name = "concert-frontend"
+dockerfile = "./frontend/Dockerfile"
+context = "./frontend"
