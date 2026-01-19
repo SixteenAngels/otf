@@ -4,7 +4,7 @@ from app.database import engine
 from app.models.base import Base
 from app.models.user import User
 from app.models.concert import Concert
-from app.utils.auth import hash_password
+from app.utils.auth import get_password_hash
 
 async def init_db():
     """Create all tables"""
@@ -20,9 +20,9 @@ async def seed_users():
     from app.database import async_session
     
     users = [
-        User(username="otf", email="otf@test.com", password_hash=hash_password("cows12"), role="admin"),
-        User(username="sales1", email="sales1@test.com", password_hash=hash_password("sales1"), role="sales"),
-        User(username="verify1", email="verify1@test.com", password_hash=hash_password("verify1"), role="verify"),
+        User(username="otf", email="otf@test.com", password_hash=get_password_hash("cows12"), role="admin"),
+        User(username="sales1", email="sales1@test.com", password_hash=get_password_hash("sales1"), role="sales"),
+        User(username="verify1", email="verify1@test.com", password_hash=get_password_hash("verify1"), role="verify"),
     ]
     
     async with async_session() as session:
