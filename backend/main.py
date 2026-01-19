@@ -8,9 +8,6 @@ from app.routes import (
     transfer_router
 )
 
-# Simple startup event to ensure db is initialized
-startup_done = False
-
 app = FastAPI(
     title="Concert Ticket QR System",
     description="API for managing concert tickets with QR codes, authentication, and attendance tracking",
@@ -32,6 +29,25 @@ app.include_router(concert_router)
 app.include_router(ticket_router)
 app.include_router(scan_router)
 app.include_router(transfer_router)
+
+
+# Initialize database on startup
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup if needed."""
+    import asyncio
+    import os
+    try:
+        if os.getenv("DATABASE_URL"):
+            from init_db import init_db, seed_users, seed_concert
+            print("Initializing database on startup...")
+            await init_db()
+            await seed_users()
+            await seed_concert()
+            print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
+        # Don't crash the server if initialization fails
 
 
 @app.get("/")

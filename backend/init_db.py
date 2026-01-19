@@ -1,19 +1,34 @@
 """Initialize database and seed accounts"""
 import asyncio
+import os
+import sys
 from app.database import engine
 from app.models.base import Base
 from app.models.user import User
 from app.models.concert import Concert
 from app.utils.auth import get_password_hash
 
+# Debug: Print database URL being used
+db_url = os.getenv("DATABASE_URL", "")
+if not db_url:
+    print("ERROR: DATABASE_URL not set. Skipping initialization.")
+    sys.exit(0)
+print(f"Using DATABASE_URL: {db_url[:50]}...")
+
 async def init_db():
     """Create all tables"""
-    async with engine.begin() as conn:
-        print("Dropping tables...")
-        await conn.run_sync(Base.metadata.drop_all)
-        print("Creating tables...")
-        await conn.run_sync(Base.metadata.create_all)
-        print("✓ Tables created")
+    try:
+        async with engine.begin() as conn:
+            print("Dropping tables...")
+            await conn.run_sync(Base.metadata.drop_all)
+            print("Creating tables...")
+            await conn.run_sync(Base.metadata.create_all)
+            print("✓ Tables created")
+    except Exception as e:
+        print(f"ERROR during init_db: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 async def seed_users():
     """Seed test users"""
