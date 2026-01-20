@@ -9,11 +9,8 @@ from app.models.concert import Concert
 from app.utils.auth import get_password_hash
 
 # Debug: Print database URL being used
-db_url = os.getenv("DATABASE_URL", "")
-if not db_url:
-    print("ERROR: DATABASE_URL not set. Skipping initialization.")
-    sys.exit(0)
-print(f"Using DATABASE_URL: {db_url[:50]}...")
+db_url = os.getenv("DATABASE_URL", "sqlite:///./concert_tickets.db")
+print(f"Using database: {db_url[:50]}...")
 
 async def init_db():
     """Create all tables"""

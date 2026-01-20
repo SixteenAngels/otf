@@ -36,15 +36,13 @@ app.include_router(transfer_router)
 async def startup_event():
     """Initialize database on startup if needed."""
     import asyncio
-    import os
     try:
-        if os.getenv("DATABASE_URL"):
-            from init_db import init_db, seed_users, seed_concert
-            print("Initializing database on startup...")
-            await init_db()
-            await seed_users()
-            await seed_concert()
-            print("Database initialized successfully!")
+        from init_db import init_db, seed_users, seed_concert
+        print("Initializing database on startup...")
+        await init_db()
+        await seed_users()
+        await seed_concert()
+        print("Database initialized successfully!")
     except Exception as e:
         print(f"Database initialization warning: {e}")
         # Don't crash the server if initialization fails
