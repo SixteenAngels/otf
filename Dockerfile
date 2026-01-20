@@ -1,12 +1,30 @@
-# Root Dockerfile - Railway fallback
-# Actual builds use service-specific contexts from railway.toml
-# This file ensures Railway can find a Dockerfile at the root level
+# Multi-stage build: frontend + backend
 
-FROM alpine:3.18
+# Stage 1: Build React frontend
+FROM node:18-alpine AS frontend-builder
+
+WORKDIR /frontend
+
+COPY frontend/package*.json ./
+RUN npm install --legacy-peer-deps
+
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Build Python backend with frontend assets
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Placeholder - Railway should use ./backend/Dockerfile or ./frontend/Dockerfile
-# based on the service build context in railway.toml or Railway dashboard
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["echo", "Use service-specific Dockerfiles: ./backend/Dockerfile or ./frontend/Dockerfile"]
+COPY backend/ .
+
+# Copy built frontend from builder stage
+COPY --from=frontend-builder /frontend/build ../frontend/build
+
+EXPOSE 8000
+
+# Start server
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -3,5 +3,5 @@ builder = "dockerfile"
 
 [[services]]
 name = "concert-backend"
-dockerfile = "./backend/Dockerfile"
+dockerfile = "./Dockerfile"
 context = "."
