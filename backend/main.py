@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import os
 from app.routes import (
     auth_router,
     concert_router,
@@ -71,4 +74,33 @@ def health_check():
     """Health check endpoint."""
     print("DEBUG: Health endpoint called")
     return {"status": "healthy"}
+
+
+# Mount frontend static files if they exist
+frontend_build_path = Path(__file__).parent.parent / "frontend" / "build"
+if frontend_build_path.exists():
+    print(f"Mounting frontend build from {frontend_build_path}")
+    app.mount("/assets", StaticFiles(directory=frontend_build_path / "static"), name="static")
+    
+    # Serve index.html for all non-API routes (SPA routing)
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve the React app for SPA routing."""
+        # Don't intercept API routes
+        if full_path.startswith("api/"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # Serve index.html for all other routes
+        index_path = frontend_build_path / "index.html"
+        if index_path.exists():
+            with open(index_path, 'r') as f:
+                from fastapi.responses import HTMLResponse
+                return HTMLResponse(content=f.read())
+        
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Frontend not available")
+else:
+    print(f"Frontend build not found at {frontend_build_path}")
+
 
