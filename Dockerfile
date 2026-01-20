@@ -9,7 +9,7 @@ COPY frontend/package*.json ./
 RUN npm install --legacy-peer-deps
 
 COPY frontend/ ./
-RUN npm run build || npx react-scripts build
+RUN CI=false npm run build
 
 # Stage 2: Build Python backend with frontend assets
 FROM python:3.11-slim
