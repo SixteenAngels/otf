@@ -1,0 +1,43 @@
+# render.yaml
+
+services:
+  # PostgreSQL Database
+  - type: db
+    name: concert_db
+    databaseName: concert_tickets
+    user: postgres
+    plan: free # Can be upgraded for production
+
+  # Backend API (FastAPI)
+  - type: web
+    name: concert_api
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port 8000"
+    envVars:
+      - key: DATABASE_URL
+        fromService:
+          type: db
+          name: concert_db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true # Render will generate a secure secret key
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+  # Frontend (React)
+  - type: web
+    name: concert_frontend
+    runtime: static
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: ./build
+    envVars:
+      - key: REACT_APP_API_URL
+        fromService:
+          type: web
+          name: concert_api
+          property: url
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
