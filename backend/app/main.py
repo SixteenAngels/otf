@@ -21,6 +21,7 @@ app = FastAPI(
 origins = [
     "https://concert-frontend.onrender.com",
     "http://localhost:3000",
+    "http://localhost:5173",
 ]
 
 
@@ -109,4 +110,3 @@ if frontend_build_path.exists():
         raise HTTPException(status_code=404, detail="Frontend not available")
 else:
     print(f"Frontend build not found at {frontend_build_path}")
-
