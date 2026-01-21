@@ -6,8 +6,8 @@ import enum
 
 
 class ScanType(str, enum.Enum):
-    SALE_CONFIRMATION = "sale_confirmation"  # Stage 1: Seller confirms sale
-    ATTENDANCE_VERIFY = "attendance_verify"  # Stage 2: Venue verifies attendance
+    SALE = "sale"  # Stage 1: Seller confirms sale
+    ATTENDANCE = "attendance"  # Stage 2: Venue verifies attendance
 
 
 class Scan(Base):

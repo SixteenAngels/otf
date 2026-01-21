@@ -6,10 +6,13 @@ import enum
 
 
 class TicketStatus(str, enum.Enum):
-    CREATED = "created"              # Initial state
-    SOLD_CONFIRMED = "sold_confirmed"  # Seller scanned (Stage 1)
-    VERIFIED = "verified"             # Venue scanned and valid (Stage 2)
-    DUPLICATE = "duplicate"           # Attempted duplicate scan detected
+    CREATED = "created"
+    SOLD = "sold"
+    VERIFIED = "verified"
+    DUPLICATE = "duplicate"
+    ATTENDED = "attended"
+    REFUNDED = "refunded"
+    TRANSFERRED = "transferred"
 
 
 class Ticket(Base):
@@ -32,6 +35,10 @@ class Ticket(Base):
     verified_at = Column(DateTime, nullable=True)          # When venue scanned it
     verified_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Venue scanner
     
+    # Ownership
+    original_buyer_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    current_holder_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -39,3 +46,5 @@ class Ticket(Base):
     scans = relationship("Scan", back_populates="ticket", cascade="all, delete-orphan")
     sold_by_user = relationship("User", foreign_keys=[sold_by_user_id], viewonly=True)
     verified_by_user = relationship("User", foreign_keys=[verified_by_user_id], viewonly=True)
+    original_buyer = relationship("User", foreign_keys=[original_buyer_id], viewonly=True)
+    current_holder = relationship("User", foreign_keys=[current_holder_id], viewonly=True)

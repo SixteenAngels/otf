@@ -32,11 +32,11 @@ async def create_scan(
     # Check if current user is a verification user
     is_verify_user = current_user.username.startswith('verify')
     
-    # Verification users cannot rescan already-verified tickets
-    if is_verify_user and ticket.status == TicketStatus.VERIFIED:
+    # Verification users cannot rescan already-attended tickets
+    if is_verify_user and ticket.status == TicketStatus.ATTENDED:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Ticket already verified - cannot rescan"
+            detail="Ticket already marked as attended - cannot rescan"
         )
     
     # Create scan record
@@ -51,18 +51,16 @@ async def create_scan(
     
     # Update ticket status based on user type and scan type
     if is_verify_user:
-        # Verify users mark ticket as VERIFIED (immutable afterwards)
-        ticket.status = TicketStatus.VERIFIED
+        # Verify users mark ticket as ATTENDED
+        ticket.status = TicketStatus.ATTENDED
         ticket.verified_by_user_id = current_user.id
         ticket.verified_at = datetime.utcnow()
     else:
         # Sales users use scan_type to update status
         if scan.scan_type == ScanType.SALE_CONFIRMATION:
-            ticket.status = TicketStatus.SOLD_CONFIRMED
-        elif scan.scan_type == ScanType.ENTRY_CHECK:
-            ticket.status = TicketStatus.VERIFIED
+            ticket.status = TicketStatus.SOLD
         elif scan.scan_type == ScanType.ATTENDANCE:
-            ticket.status = TicketStatus.VERIFIED
+            ticket.status = TicketStatus.ATTENDED
     
     ticket.updated_at = datetime.utcnow()
     await db.commit()
@@ -90,7 +88,7 @@ async def get_concert_attendance(concert_id: int, db: AsyncSession = Depends(get
     result = await db.execute(
         select(Scan).join(Ticket).filter(
             (Ticket.concert_id == concert_id) &
-            (Scan.scan_type == ScanType.ATTENDANCE_VERIFY)
+            (Scan.scan_type == ScanType.ATTENDANCE)
         )
     )
     attendance_scans = result.scalars().all()
@@ -101,7 +99,7 @@ async def get_concert_attendance(concert_id: int, db: AsyncSession = Depends(get
     result = await db.execute(
         select(Ticket).filter(
             (Ticket.concert_id == concert_id) &
-            (Ticket.status.in_([TicketStatus.SOLD_CONFIRMED, TicketStatus.VERIFIED]))
+            (Ticket.status.in_([TicketStatus.SOLD, TicketStatus.ATTENDED]))
         )
     )
     sold_tickets = result.scalars().all()

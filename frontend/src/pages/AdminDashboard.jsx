@@ -2,6 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { concertAPI, ticketAPI, scanAPI } from '../api/client';
 import { toast } from 'react-toastify';
 
+const statusColors = {
+  created: 'bg-gray-100 text-gray-800',
+  sold: 'bg-blue-100 text-blue-800',
+  verified: 'bg-green-100 text-green-800',
+  attended: 'bg-purple-100 text-purple-800',
+  duplicate: 'bg-yellow-100 text-yellow-800',
+  refunded: 'bg-red-100 text-red-800',
+  transferred: 'bg-indigo-100 text-indigo-800',
+};
+
 export const AdminDashboard = () => {
   const [concerts, setConcerts] = useState([]);
   const [selectedConcert, setSelectedConcert] = useState(null);
@@ -538,27 +548,6 @@ export const AdminDashboard = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded">
-                <p className="text-gray-600 text-sm">Total Sold</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {attendance.total_sold}
-                </p>
-              </div>
-              <div className="bg-green-50 p-4 rounded">
-                <p className="text-gray-600 text-sm">Attended</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {attendance.total_attended}
-                </p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded">
-                <p className="text-gray-600 text-sm">Attendance Rate</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {attendance.attendance_rate}
-                </p>
-              </div>
-            </div>
-
             {viewMode === 'qr' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {tickets.map((ticket) => (
@@ -588,14 +577,7 @@ export const AdminDashboard = () => {
                     </p>
                     <p className="text-xs text-gray-600 mt-1">ID: {ticket.id}</p>
                     <p
-                      className={`text-xs mt-2 px-2 py-1 rounded ${
-                        ticket.status === 'verified'
-                          ? 'bg-green-100 text-green-800'
-                          : ticket.status === 'sold_confirmed'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
+                      className={`text-xs mt-2 px-2 py-1 rounded ${statusColors[ticket.status] || 'bg-gray-100 text-gray-800'}`}>
                       {ticket.status}
                     </p>
                     {!useDevQR && (
@@ -646,14 +628,7 @@ export const AdminDashboard = () => {
                         <td className="px-4 py-2">${ticket.price || '-'}</td>
                         <td className="px-4 py-2">
                           <span
-                            className={`px-2 py-1 rounded text-xs font-semibold ${
-                              ticket.status === 'verified'
-                                ? 'bg-green-100 text-green-800'
-                                : ticket.status === 'sold_confirmed'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
+                            className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[ticket.status] || 'bg-gray-100 text-gray-800'}`}>
                             {ticket.status}
                           </span>
                         </td>
@@ -777,4 +752,3 @@ export const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-

@@ -4,6 +4,16 @@ import { scanAPI, ticketAPI, concertAPI } from '../api/client';
 import { useAuthStore } from '../store';
 import { toast } from 'react-toastify';
 
+const statusColors = {
+  created: 'bg-gray-100 text-gray-800',
+  sold: 'bg-blue-100 text-blue-800',
+  verified: 'bg-green-100 text-green-800',
+  attended: 'bg-purple-100 text-purple-800',
+  duplicate: 'bg-yellow-100 text-yellow-800',
+  refunded: 'bg-red-100 text-red-800',
+  transferred: 'bg-indigo-100 text-indigo-800',
+};
+
 export const ScannerPage = () => {
   const [scanType, setScanType] = useState('attendance');
   const [location, setLocation] = useState('');
@@ -14,31 +24,25 @@ export const ScannerPage = () => {
 
   const handleScan = async (qrData) => {
     try {
-      // First get the ticket details
       const ticket = await ticketAPI.getByNumber(qrData.ticket_number);
-      setScannedTicket(ticket);
       
-      // Check if user is a verification user
-      const isVerifier = user?.role === 'scanner'; // Both sales and verify have 'scanner' role
-      const userType = user?.username?.startsWith('verify') ? 'verify' : 'sales';
+      const isVerifier = user?.username?.startsWith('verify');
       
-      // If verification user trying to scan already-verified ticket, reject
-      if (userType === 'verify' && ticket.status === 'verified') {
-        toast.error('❌ Ticket already verified - cannot rescan!');
+      if (isVerifier && ticket.status === 'attended') {
+        toast.error('❌ Ticket already attended - cannot rescan!');
         setScannedTicket(null);
         return;
       }
       
-      // Then get the concert details
+      setScannedTicket(ticket);
+      
       try {
         const concert = await concertAPI.get(ticket.concert_id);
         setScannedConcert(concert);
       } catch (err) {
-        // Concert fetch might fail, but ticket info is still valid
         setScannedConcert(null);
       }
 
-      // Record the scan
       setLoading(true);
       await scanAPI.create({
         ticket_id: ticket.id,
@@ -46,13 +50,16 @@ export const ScannerPage = () => {
         location: location || undefined,
       });
 
-      // Auto-mark as verified if verify user scans it
-      if (userType === 'verify') {
-        toast.success(`✓ Ticket verified & locked (no re-scan allowed)`);
+      if (isVerifier) {
+        toast.success(`✓ Ticket marked as attended!`);
       } else {
-        toast.success(`Ticket scanned - Status: ${scanType}`);
+        toast.success(`Ticket scan recorded - Status: ${scanType}`);
       }
       
+      // Refresh ticket state
+      const updatedTicket = await ticketAPI.getByNumber(qrData.ticket_number);
+      setScannedTicket(updatedTicket);
+
       setTimeout(() => {
         setScannedTicket(null);
         setScannedConcert(null);
@@ -70,8 +77,8 @@ export const ScannerPage = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Ticket Scanner</h1>
         <p className="text-gray-600 mb-8">
           {user?.username?.startsWith('verify') 
-            ? '🔒 Verification Mode - Each ticket can only be scanned ONCE' 
-            : '📝 Sales Mode - Multiple scans allowed per ticket'}
+            ? '🔒 Attendance Mode - Each ticket can only be scanned ONCE' 
+            : '📝 Sales/Admin Mode - Multiple scans allowed'}
         </p>
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
@@ -84,9 +91,8 @@ export const ScannerPage = () => {
               onChange={(e) => setScanType(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="attendance">Attendance Check</option>
-              <option value="entry_check">Entry Check</option>
-              <option value="sale_confirmation">Sale Confirmation</option>
+              <option value="attendance">Attendance</option>
+              <option value="sale">Sale</option>
             </select>
           </div>
 
@@ -106,41 +112,38 @@ export const ScannerPage = () => {
           <QRScanner onScan={handleScan} />
 
           {scannedTicket && (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded">
-              <h3 className="text-lg font-semibold text-green-900 mb-3">
+            <div className={`mt-6 p-4 border rounded ${scannedTicket.status === 'attended' ? 'bg-purple-50 border-purple-200' : 'bg-green-50 border-green-200'}`}>
+              <h3 className={`text-lg font-semibold mb-3 ${scannedTicket.status === 'attended' ? 'text-purple-900' : 'text-green-900'}`}>
                 ✓ Ticket Scanned Successfully
               </h3>
               
               {scannedConcert && (
-                <div className="mb-4 pb-4 border-b border-green-200">
-                  <p className="text-green-900 font-bold text-base">
+                <div className="mb-4 pb-4 border-b border-gray-200">
+                  <p className="font-bold text-base">
                     {scannedConcert.name}
                   </p>
-                  <p className="text-green-800 text-sm">
+                  <p className="text-sm">
                     <strong>Venue:</strong> {scannedConcert.venue}
                   </p>
-                  <p className="text-green-800 text-sm">
+                  <p className="text-sm">
                     <strong>Date:</strong> {new Date(scannedConcert.date).toLocaleDateString()}
                   </p>
                 </div>
               )}
               
               <div className="space-y-1 text-sm">
-                <p className="text-green-800">
+                <p>
                   <strong>Ticket:</strong> {scannedTicket.ticket_number}
                 </p>
-                <p className="text-green-800">
+                <p>
                   <strong>Buyer:</strong> {scannedTicket.buyer_name || 'N/A'}
                 </p>
-                <p className="text-green-800">
+                <p>
                   <strong>Email:</strong> {scannedTicket.buyer_email || 'N/A'}
                 </p>
-                <p className={`font-semibold ${scannedTicket.status === 'verified' ? 'text-red-700' : 'text-green-800'}`}>
+                <p className={`font-semibold`}>
                   <strong>Status:</strong> 
-                  <span className="ml-2 px-2 py-1 rounded text-xs font-mono" style={{
-                    backgroundColor: scannedTicket.status === 'verified' ? '#fee2e2' : '#dcfce7',
-                    color: scannedTicket.status === 'verified' ? '#7f1d1d' : '#166534'
-                  }}>
+                  <span className={`ml-2 px-2 py-1 rounded text-xs font-mono ${statusColors[scannedTicket.status] || 'bg-gray-100 text-gray-800'}`}>
                     {scannedTicket.status}
                   </span>
                 </p>
