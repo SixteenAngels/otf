@@ -1,4 +1,4 @@
-# Concert Ticket QR Code Management System
+# Enhanced Concert Ticket QR Code Management System
 
 A complete full-stack system for managing concert tickets using QR codes. Built with FastAPI (backend), React (frontend), and PostgreSQL (database). Features include user authentication, ticket generation, QR scanning for attendance tracking, refund management, and ticket transfers.
 
@@ -8,9 +8,9 @@ A complete full-stack system for managing concert tickets using QR codes. Built 
 - ✅ **User Authentication**: JWT-based auth with role-based access control
 - ✅ **Concert Management**: Create and organize concert events
 - ✅ **Ticket Generation**: Auto-generate unique tickets with QR codes
-- ✅ **QR Scanning**: Real-time QR code scanning from mobile/web
+- ✅ **Enhanced QR Scanning**: Real-time QR code scanning with distinct modes for sales and attendance.
 - ✅ **Sales Tracking**: Track sold tickets with buyer information
-- ✅ **Attendance Tracking**: Scan tickets to verify attendance
+- ✅ **Advanced Attendance Tracking**: Scan tickets to verify attendance, with duplicate scan prevention.
 - ✅ **Attendance Analytics**: Real-time attendance statistics
 
 ### Advanced Features
@@ -20,6 +20,14 @@ A complete full-stack system for managing concert tickets using QR codes. Built 
 - ✅ **Database Migrations**: Version control with Alembic
 - ✅ **Async Operations**: Built on async/await for high performance
 - ✅ **Docker Support**: Full Docker Compose setup for easy deployment
+
+## ✨ System Highlights
+
+- **Dual-Mode Scanning**: The system now supports two distinct scanning modes:
+  - **Sales Mode**: For sellers to mark tickets as sold and track sales.
+  - **Attendance Mode**: For venue staff to verify tickets and prevent duplicate entries.
+- **Comprehensive Admin Dashboard**: A new, intuitive dashboard for managing concerts, tickets, and attendance.
+- **Scalable Architecture**: Built with modern, scalable technologies to handle high-traffic events.
 
 ## 📋 System Architecture
 

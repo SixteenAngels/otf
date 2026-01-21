@@ -17,10 +17,17 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Define allowed origins
+origins = [
+    "https://concert-frontend.onrender.com",
+    "http://localhost:3000",
+]
+
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -102,5 +109,4 @@ if frontend_build_path.exists():
         raise HTTPException(status_code=404, detail="Frontend not available")
 else:
     print(f"Frontend build not found at {frontend_build_path}")
-
 

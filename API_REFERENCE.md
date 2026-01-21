@@ -1,4 +1,4 @@
-# API Reference
+# Enhanced Ticketing System API
 
 Complete API documentation for Concert Ticket QR System.
 
@@ -217,6 +217,11 @@ GET /tickets/concert/{concert_id}
 ## 📍 Scan Endpoints
 
 ### Record Scan (Scanner/Admin Only)
+Records a ticket scan and updates the ticket's status based on the scan type and user role.
+
+- **Verification users** (`verify*` username) can only scan a ticket once to mark it as `attended`.
+- **Sales/Admin users** can scan tickets multiple times with different scan types (`sale`, `attendance`).
+
 ```http
 POST /scans/
 Authorization: Bearer YOUR_TOKEN
@@ -481,18 +486,18 @@ Example:
 
 ## 🔄 Scan Types
 
-- `attendance` - Mark as attended
-- `entry_check` - Entry verification
-- `sale_confirmation` - Confirm sale
+- `sale` - Stage 1: Seller confirms sale.
+- `attendance` - Stage 2: Venue verifies attendance.
 
 ## 📋 Ticket Status Values
 
-- `created` - Newly created, not sold
-- `sold` - Sold to a buyer
-- `scanned_entry` - Scanned at entry
-- `attended` - Attended the event
-- `refunded` - Refund approved
-- `transferred` - Transferred to another user
+- `created` - Newly created, not sold.
+- `sold` - Sold to a buyer.
+- `verified` - Verified by a venue scanner (deprecated).
+- `duplicate` - Scanned more than once.
+- `attended` - Attended the event.
+- `refunded` - Refund approved.
+- `transferred` - Transferred to another user.
 
 ## 👥 User Roles
 
