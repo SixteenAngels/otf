@@ -17,17 +17,14 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Determine database URL based on environment
-if settings.env == "production" and settings.database_url and "postgresql" in settings.database_url:
-    # Production with PostgreSQL
-    pass
-elif os.getenv("DATABASE_URL") and "localhost" not in os.getenv("DATABASE_URL"):
-    # Valid external database URL
+# Use DATABASE_URL from environment if available and not localhost
+if os.getenv("DATABASE_URL") and "localhost" not in os.getenv("DATABASE_URL"):
     settings.database_url = os.getenv("DATABASE_URL")
-elif os.getenv("DATABASE_URL") is None or "localhost" in os.getenv("DATABASE_URL"):
-    # No valid DB URL, use SQLite
-    settings.database_url = "sqlite+aiosqlite:///./concert_tickets.db"
-    
-# Final fallback
+
+# If we have a postgresql URL, make sure it's async
+if settings.database_url and settings.database_url.startswith("postgresql://"):
+    settings.database_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+# If no database_url is set by now, default to sqlite
 if not settings.database_url:
     settings.database_url = "sqlite+aiosqlite:///./concert_tickets.db"
