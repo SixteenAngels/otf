@@ -8,7 +8,6 @@ services:
   - type: web
     name: concert_api
     runtime: docker
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port 8000"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -22,12 +21,8 @@ services:
   - type: web
     name: concert_frontend
     runtime: docker
-    startCommand: "serve -s build -l 3000"
     envVars:
       - key: REACT_APP_API_URL
-        fromService:
-          type: web
-          name: concert_api
-          property: url
+        value: https://concert-api.onrender.com
     dockerContext: ./frontend
     dockerfilePath: ./frontend/Dockerfile
