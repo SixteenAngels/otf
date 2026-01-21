@@ -1,13 +1,12 @@
 # render.yaml
 
-services:
-  # PostgreSQL Database
-  - type: db
-    name: concert_db
+databases:
+  - name: concert_db
     databaseName: concert_tickets
     user: postgres
     plan: free # Can be upgraded for production
 
+services:
   # Backend API (FastAPI)
   - type: web
     name: concert_api
@@ -16,8 +15,7 @@ services:
     startCommand: "uvicorn main:app --host 0.0.0.0 --port 8000"
     envVars:
       - key: DATABASE_URL
-        fromService:
-          type: db
+        fromDatabase:
           name: concert_db
           property: connectionString
       - key: SECRET_KEY
